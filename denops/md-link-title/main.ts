@@ -1,27 +1,13 @@
-import { Denops, DOMParser, ensure, fn, is } from "./deps.ts";
+import { Denops, DOMParser, ensure, fn, helper, is, outdent } from "./deps.ts";
 
 export async function main(denops: Denops): Promise<void> {
   // Plugin program starts from here
   denops.dispatcher = {
-    async url2title(input: unknown): Promise<unknown> {
-      const [mode, start, end] = await Promise.all([
-        fn.mode(denops),
-        fn.getpos(denops, "'<"),
-        fn.getpos(denops, "'>"),
-      ]);
+    async url2title(...args): Promise<unknown> {
+      const afirstline = args[0] as number;
+      const alastline = args[1] as number;
 
-      const acceptableModes = ["v", "V"];
-      // if (!acceptableModes.includes(mode)) {
-      //   return new Error(`${mode} must be ${acceptableModes.join(" or ")}`);
-      // }
-
-      const lines = await fn.getbufline(
-        denops,
-        // await fn.bufname(denops, start[0]),
-        "%",
-        start[1],
-        end[1],
-      );
+      const lines = await fn.getbufline(denops, "%", afirstline, alastline);
 
       // ref: https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
       const regex =
@@ -59,11 +45,20 @@ export async function main(denops: Denops): Promise<void> {
         ),
       );
 
-      await fn.setbufline(denops, "%", start[1], newLines);
+      await fn.setbufline(denops, "%", afirstline, newLines);
 
       return await Promise.resolve();
     },
   };
+  await helper.execute(
+    denops,
+    outdent`
+    function! MdLinkTitle() range abort
+      call denops#notify("${denops.name}", "url2title", [a:firstline, a:lastline])
+    endfunction
+    command! -nargs=0 -range MdLinkTitle <line1>,<line2>call MdLinkTitle()
+    `,
+  );
 }
 
 const url2title = async (url: string): Promise<string> => {
