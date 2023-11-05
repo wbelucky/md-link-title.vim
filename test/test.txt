@@ -1,0 +1,4 @@
+[javascript - What is a good regular expression to match a URL? - Stack Overflow](https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url)
+<https://deno.land/x/denops_std@v5.0.1/function/mod.ts?s=line>
+https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
+
