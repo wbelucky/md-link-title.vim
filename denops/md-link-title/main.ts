@@ -20,7 +20,7 @@ export async function main(denops: Denops): Promise<void> {
         // await fn.bufname(denops, start[0]),
         "%",
         start[1],
-        end[1]
+        end[1],
       );
 
       // ref: https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
@@ -33,15 +33,14 @@ export async function main(denops: Denops): Promise<void> {
             await Promise.all(
               [...s.matchAll(regex)].map(async (match) => {
                 const url = match[1];
-                console.log(url);
                 try {
                   const title = await url2title(url);
                   return [url, title] as [url: string, title: string];
                 } catch (e) {
-                  console.error(e);
+                  console.error(`url: ${url}, error: ${e}`);
                   return null;
                 }
-              })
+              }),
             )
           ).reduce((prev: string, pair) => {
             if (!pair) return prev;
@@ -49,17 +48,16 @@ export async function main(denops: Denops): Promise<void> {
             const escapedUrl = url.replace(/[-\/\\^$*+?.()|\[\]{}]/g, "\\$&");
             try {
               return prev.replace(
-                new RegExp(`${escapedUrl}|<${escapedUrl}>`),
-                `[${title}](${url})`
+                new RegExp(`<${escapedUrl}>|([^()]|^)${escapedUrl}([^()]|$)`),
+                `[${title}](${url})`,
               );
             } catch (e) {
-              console.log(`url: ${url}, title: ${title}, error: ${e}`);
+              console.error(`url: ${url}, title: ${title}, error: ${e}`);
               return prev;
             }
           }, s)
-        )
+        ),
       );
-      console.log(newLines);
 
       await fn.setbufline(denops, "%", start[1], newLines);
 
