@@ -1,5 +1,5 @@
 import { PredicateType } from "https://deno.land/x/unknownutil@v3.9.0/is.ts";
-import { Denops, ensure, fn, is } from "./deps.ts";
+import { Denops, ensure, fn, helper, is } from "./deps.ts";
 import { replaceUrlWithTitledMdLink } from "./url2title.ts";
 
 const isOptions = is.ObjectOf({ acceptLanguage: is.OptionalOf(is.String) });
@@ -18,12 +18,16 @@ export async function main(denops: Denops): Promise<void> {
       const alastline = ensure(_alastline, is.Number);
 
       const lines = await fn.getbufline(denops, "%", afirstline, alastline);
-      const newLines = await replaceUrlWithTitledMdLink(
+      const result = await replaceUrlWithTitledMdLink(
         lines,
         options.acceptLanguage ?? "en-US",
       );
 
-      await fn.setbufline(denops, "%", afirstline, newLines);
+      await fn.setbufline(denops, "%", afirstline, result.lines);
+      await helper.echo(
+        denops,
+        `md_link_title#replace: detected urls: ${result.detected}, success: ${result.success}`,
+      );
 
       return await Promise.resolve();
     },
