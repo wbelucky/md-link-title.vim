@@ -1,12 +1,16 @@
 import { DOMParser } from "./deps.ts";
 
+const regexNotSurroundedByBracket = (s: string): RegExp =>
+  new RegExp(`([^()]|^)(${s})([^()]|$)`, "gi");
+
 export async function replaceUrlWithTitledMdLink(
   input: string[],
   acceptLanguage: string,
 ): Promise<{ lines: string[]; detected: number; success: number }> {
   // ref: https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
-  const regex =
-    /[^(]*(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))[^)]*/gi;
+  const regexHttpUrl =
+    /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
+  const regex = regexNotSurroundedByBracket(regexHttpUrl.source);
 
   let detected = 0;
   let success = 0;
@@ -15,7 +19,7 @@ export async function replaceUrlWithTitledMdLink(
       (
         await Promise.all(
           [...s.matchAll(regex)].map(async (match) => {
-            const url = match[1];
+            const url = match[2];
             detected += 1;
             try {
               const title = await url2title(url, acceptLanguage ?? "en-US");
@@ -30,12 +34,13 @@ export async function replaceUrlWithTitledMdLink(
         if (!pair) return prev;
         const [url, title] = pair;
         const escapedUrl = url.replace(/[-\/\\^$*+?.()|\[\]{}]/g, "\\$&");
+        const markdownLink = `[${title.replace(/[\[\]]/g, "\\$&")}](${url})`;
         try {
           const newLine = prev
-            .replace(new RegExp(`<${escapedUrl}>`), `[${title}](${url})`)
+            .replace(new RegExp(`<${escapedUrl}>`), markdownLink)
             .replace(
-              new RegExp(`([^()]|^)${escapedUrl}([^()]|$)`),
-              `$1[${title}](${url})$2`,
+              regexNotSurroundedByBracket(escapedUrl),
+              `$1${markdownLink}$3`,
             );
           success += 1;
           return newLine;
