@@ -6,7 +6,7 @@ const isOptions = is.ObjectOf({ acceptLanguage: is.OptionalOf(is.String) });
 
 type Options = PredicateType<typeof isOptions>;
 
-export async function main(denops: Denops): Promise<void> {
+export function main(denops: Denops) {
   let options: Options = {};
   denops.dispatcher = {
     async setGlobal(_options): Promise<void> {
@@ -24,10 +24,12 @@ export async function main(denops: Denops): Promise<void> {
       );
 
       await fn.setbufline(denops, "%", afirstline, result.lines);
-      await helper.echo(
-        denops,
-        `md_link_title#replace: detected urls: ${result.detected}, success: ${result.success}`,
-      );
+      if (result.detected > 0) {
+        await helper.echo(
+          denops,
+          `md_link_title#replace: detected urls: ${result.detected}, success: ${result.success}`,
+        );
+      }
 
       return await Promise.resolve();
     },
