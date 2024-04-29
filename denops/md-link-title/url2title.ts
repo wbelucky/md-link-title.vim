@@ -100,6 +100,8 @@ async function fetchTitleReddit(url: string, acceptLanguage: string) {
       headers: {
         Accept: "application/json",
         "Accept-Language": acceptLanguage,
+        "User-Agent":
+          "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
       },
     });
   } catch (e) {
