@@ -27,11 +27,12 @@ Plug 'vim-denops/denops.vim'
   lazy = false, -- TODO:
   dependencies = { "vim-denops/denops.vim" },
 }
+```
 
 ## Supported URLs
+
 - most webpages that has `<title>` html element.
 - Reddit: The extension fetches the title of Reddit posts and incorporates them into the Markdown link.
-```
 
 ## Configuration
 
