@@ -21,4 +21,4 @@ function! s:toggleAutoReplace() abort
   endif
 endfunction
 
-call s:toggleAutoReplace()
+" call s:toggleAutoReplace()
